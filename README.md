@@ -1,1 +1,1 @@
-This calculator was create with Create React App
+This calculator was created with Create React App
