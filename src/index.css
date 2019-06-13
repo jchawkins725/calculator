@@ -3,6 +3,10 @@
   padding: 0px;
 }
 
+body {
+  background: #e8e8e8;
+}
+
 #root {
   display: flex;
   justify-content: center;
