@@ -9,7 +9,7 @@ const allbuttons = [
   { id: "seven", value: "7", keycode: 55 },
   { id: "eight", value: "8", keycode: 56 },
   { id: "nine", value: "9", keycode: 57 },
-  { id: "multiply", value: "x", keycode: 56 },
+  { id: "multiply", value: "x", keycode: 88 },
   { id: "four", value: "4", keycode: 52 },
   { id: "five", value: "5", keycode: 53 },
   { id: "six", value: "6", keycode: 54 },
@@ -20,7 +20,7 @@ const allbuttons = [
   { id: "add", value: "+", keycode: 187 },
   { id: "zero", value: "0", keycode: 48 },
   { id: "decimal", value: ".", keycode: 190 },
-  { id: "equals", value: "=", keycode: 187 },
+  { id: "equals", value: "=", keycode: 13 }
 ];
 
 class Display extends React.Component {
@@ -70,7 +70,7 @@ class App extends React.Component {
       return
     }
     else {
-      this.setState(prevState => ({ currentNumber: prevState.currentNumber + allbuttons[i].value, operator: "", equation: prevState.equation + allbuttons[i].value }));
+      this.setState(prevState => ({ currentNumber: prevState.currentNumber + allbuttons[i].value, operator: "", equation: prevState.equation + allbuttons[i].value}));
     }
   }
   handleDecimal() {
@@ -118,7 +118,7 @@ class App extends React.Component {
     }
   }
   render() {
-    const buttons = allbuttons.map((x, y) => <Buttons id={x.id} value={x.value} keycode={x.keycode} index={y} clear={this.handleClear} number={this.handleNumbers} decimal={this.handleDecimal} plusminus={this.handlePlusMinus} equal={this.handleEquals} operator={this.handleOperators} />);
+    const buttons = allbuttons.map((x, y) => <Buttons id={x.id} value={x.value} keycode={x.keycode} index={y} clear={this.handleClear} number={this.handleNumbers} decimal={this.handleDecimal} plusminus={this.handlePlusMinus} equal={this.handleEquals} operator={this.handleOperators}/>);
     return (
       <div id="calculator">
         <Display result={this.state.result} currentNumber={this.state.currentNumber} equation={this.state.equation} previousNumber={this.state.previousNumber} />
