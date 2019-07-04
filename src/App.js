@@ -27,6 +27,7 @@ class Display extends React.Component {
   render() {
     return (
       <div className="displaycontainer">
+        <p id="displayequation" className={this.props.equation === "" ? "hidden" : ""}>{this.props.equation === "" ? this.props.result : this.props.equation}</p>
         <p id="display">{this.props.previousNumber === "" && this.props.currentNumber === "" ? this.props.result : this.props.currentNumber === "" ? this.props.previousNumber : this.props.currentNumber}</p>
       </div>
     )

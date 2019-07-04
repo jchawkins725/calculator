@@ -21,15 +21,24 @@ body {
   border-radius: 6px;
 }
 .displaycontainer {
-  width: 276px;
+  width: 296px;
   text-align: right;
   color: white;
-  padding: 10px;
+  padding: 0px;
   margin: 4px;
   font-size: 30px;
   overflow: hidden;
 }
-
+#displayequation {
+  text-align: left;
+  font-size: 20px;
+}
+.hidden {
+  visibility: hidden;
+}
+#display {
+  padding: 10px 0px;
+}
 button {
   width: 68px;
   height: 68px;
