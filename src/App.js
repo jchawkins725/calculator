@@ -19,25 +19,21 @@ const allbuttons = [
   { id: "add", value: "+", keycode: 187 },
   { id: "zero", value: "0", keycode: 48 },
   { id: "decimal", value: ".", keycode: 190 },
-  { id: "equals", value: "=", keycode: 13 }
+  { id: "equals", value: "=", keycode: 13 },
 ];
 
 class Display extends React.Component {
   render() {
     return (
       <div className="displaycontainer">
-        <p
-          id="displayequation"
-          className={this.props.equation === "" ? "hidden" : ""}
-        >
-          {this.props.equation === "" ? this.props.result : this.props.equation}
-        </p>
         <p id="display">
-          {this.props.previousNumber === "" && this.props.currentNumber === ""
-            ? this.props.result
-            : this.props.currentNumber === ""
-            ? this.props.previousNumber
-            : this.props.currentNumber}
+          {this.props.currentNumber === "" && this.props.equation === undefined
+            ? 0
+            : this.props.currentNumber !== ""
+            ? this.props.currentNumber
+            : this.props.equation[0] !== undefined
+            ? this.props.equation[0]
+            : 0}
         </p>
       </div>
     );
@@ -48,45 +44,37 @@ const test = /(x|-|\+|\/)/;
 class Buttons extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {};
+    this.state = {
+    }
     this.handleKeyDown = this.handleKeyDown.bind(this);
   }
   handleKeyDown(e) {
     if (e.keyCode === this.props.keycode) {
       const digitRegex = /\d/;
       if (digitRegex.test(parseInt(this.props.value, 10))) {
-        if (e.shiftKey === false) {
+        if (e.shiftKey === false    ) {
           this.props.number(this.props.index);
+        } else if (e.keyCode === 56) {
+          this.props.operator(6);
         }
-        else if (e.keyCode === 56) {
-          this.props.operator(6)
-        }
-      }
-      else if (this.props.value === "-" || this.props.value === "/" || this.props.value === "x" || this.props.value === "+") {
+      } else if (test.test(this.props.value)) {
         if (e.shiftKey === true && e.keyCode === 187) {
-          this.props.operator(14)
-        }
-        else if (e.shiftKey === false && e.keyCode === 187) {
+          this.props.operator(14);
+        } else if (e.shiftKey === false && e.keyCode === 187) {
           this.props.equal();
+        } else if (e.keyCode !== 187) {
+          this.props.operator(this.props.index);
         }
-        else if (e.keyCode !== 187) {
-          this.props.operator(this.props.index)
-        }
-      }
-      else if (this.props.value === "+/-") {
+      } else if (this.props.value === "+/-") {
         this.props.plusminus();
-      }
-      else if (this.props.value === ".") {
+      } else if (this.props.value === ".") {
         this.props.decimal();
-      }
-      else if (this.props.value === "AC") {
+      } else if (this.props.value === "AC") {
         this.props.clear();
-      }
-      else {
+      } else {
         this.props.equal();
       }
-    }
-    else if (e.keyCode === 8) {
+    } else if (e.keyCode === 8) {
       this.props.clear();
     }
   }
@@ -103,7 +91,7 @@ class Buttons extends React.Component {
       <button
         id={id}
         value={value}
-        className={test.test(value) ? "operators" : ""}
+        className={`${test.test(value) ? "operators" : ""}`}
         onClick={
           value === "AC"
             ? this.props.clear
@@ -129,11 +117,10 @@ class App extends React.Component {
     super(props);
     this.state = {
       result: "0",
-      equation: "",
+      equationArray: [],
       currentNumber: "",
-      previousNumber: "",
       operator: "",
-      plusminus: true
+      plusminus: true,
     };
     this.handleClear = this.handleClear.bind(this);
     this.handleNumbers = this.handleNumbers.bind(this);
@@ -144,97 +131,100 @@ class App extends React.Component {
   }
   handleClear() {
     this.setState({
-      equation: "",
+      equationArray: [],
       currentNumber: "",
       result: "0",
-      previousNumber: "",
       operator: "",
-      plusminus: true
+      plusminus: true,
     });
   }
   handleNumbers(i) {
     if (allbuttons[i].value === "0" && this.state.currentNumber === "0") {
       return;
     } else {
-      this.setState(prevState => ({
+      if (this.state.operator !== "") {
+        this.setState((prevState) => ({
+          equationArray: [...prevState.equationArray, this.state.operator],
+          operator: "",
+        }));
+      }
+      this.setState((prevState) => ({
         currentNumber: prevState.currentNumber + allbuttons[i].value,
-        operator: "",
-        equation: prevState.equation + allbuttons[i].value
       }));
     }
   }
   handleDecimal() {
     if (this.state.currentNumber === "") {
-      this.setState({ currentNumber: "0.", equation: "0." });
+      this.setState({ currentNumber: "0." });
     } else if (!this.state.currentNumber.includes(".")) {
-      this.setState(prevState => ({
+      this.setState((prevState) => ({
         currentNumber: prevState.currentNumber + ".",
-        equation: prevState.equation + "."
       }));
     } else {
       return;
     }
   }
   handleOperators(i) {
-    if (this.state.equation === "") {
+    const current = this.state.currentNumber;
+    if (
+      this.state.currentNumber === "" &&
+      this.state.equationArray.length === 0
+    ) {
       return;
-    } else if (test.test(this.state.operator)) {
-      this.setState(prevState => ({
-        operator: allbuttons[i].value,
-        equation:
-          prevState.equation.slice(0, prevState.equation.length - 2) +
-          allbuttons[i].value.replace(/x/g, "*") +
-          " "
-      }));
     } else {
-      this.setState(prevState => ({
-        operator: allbuttons[i].value,
-        currentNumber: "",
-        equation:
-          prevState.equation +
-          " " +
-          allbuttons[i].value.replace(/x/g, "*") +
-          " ",
-        previousNumber: this.state.currentNumber
-      }));
+      if (this.state.equationArray.length > 1) {
+        this.equation();
+        this.setState({operator: allbuttons[i].value})
+      } else if (this.state.currentNumber !== "") {
+        this.setState({ equationArray: [Number(current)], currentNumber: "", operator: allbuttons[i].value });
+      } else {
+        this.setState({
+          operator: allbuttons[i].value,
+        });
+      }
     }
   }
   handlePlusMinus() {
-    const expression = /(\d+)$/;
-    const expressiontwo = /(-\d+)$/;
+    const expressiontwo = /(-\d+)/;
     if (this.state.currentNumber === "") {
       return;
     } else {
-      if (expressiontwo.test(this.state.equation)) {
-        this.setState(prevState => ({
+      if (expressiontwo.test(this.state.currentNumber)) {
+        this.setState((prevState) => ({
           currentNumber: prevState.currentNumber.substr(1),
-          equation: prevState.equation.replace(
-            expressiontwo,
-            this.state.currentNumber.substr(1)
-          )
         }));
       } else {
-        this.setState(prevState => ({
+        this.setState((prevState) => ({
           currentNumber: "-" + prevState.currentNumber,
-          equation: prevState.equation.replace(
-            expression,
-            "-" + this.state.currentNumber
-          )
         }));
       }
     }
   }
+  equation() {
+    const equation = this.state.equationArray;
+    const current = Number(this.state.currentNumber);
+    const solved =
+      equation[1] === "+"
+        ? equation[0] + current
+        : equation[1] === "-"
+        ? equation[0] - current
+        : equation[1] === "/"
+        ? equation[0] / current
+        : equation[1] === "x"
+        ? equation[0] * current
+        : 0;
+    this.setState({
+      result: solved,
+      equationArray: [solved],
+      currentNumber: "",
+    });
+  }
   handleEquals() {
-    if (this.state.equation)
-      if (this.state.equation !== "") {
-        const solved = eval(this.state.equation);
-        this.setState({
-          result: solved,
-          currentNumber: "",
-          equation: solved,
-          previousNumber: ""
-        });
-      }
+    if (this.state.equationArray <= 1 || this.state.currentNumber === "") {
+      return;
+    } else {
+      this.equation();
+    }
   }
   render() {
     const buttons = allbuttons.map((x, y) => (
@@ -257,8 +247,7 @@ class App extends React.Component {
         <Display
           result={this.state.result}
           currentNumber={this.state.currentNumber}
-          equation={this.state.equation}
-          previousNumber={this.state.previousNumber}
+          equation={this.state.equationArray}
         />
         <div id="container">{buttons}</div>
       </div>
